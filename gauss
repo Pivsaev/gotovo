@@ -1,0 +1,239 @@
+#include <iostream>
+
+int main() {
+    int n;
+    std::cout << "Введите число строк: " << std::endl;
+    std::cin >> n;
+    double** A = new double* [n];
+    for (int i = 0; i < n; ++i) {
+        A[i] = new double[n];
+    }
+    double* B = new double[n];
+    for (int i = 0; i < n; i++) {
+        std::cout << "Введите элементы " << i + 1 << " строки: " << std::endl;
+        for (int j = 0; j < n; j++) {
+            std::cin >> A[i][j];
+        }
+    }
+    std::cout << "Введите свободные элементы: ";
+    for (int i = 0; i < n; i++) {
+        std::cin >> B[i];
+    }
+    double** CopyA = new double* [n];
+    for (int i = 0; i < n; i++) {
+        CopyA[i] = new double[n];
+    }
+    double* CopyB = new double[n];
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            CopyA[i][j] = A[i][j];
+        }
+        CopyB[i] = B[i];
+    }
+    std::cout << "Исходная матрица:" << std::endl;
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            std::cout <<  A[i][j] << ' ';
+        }
+        std::cout << ' ' << B[i] << std::endl;
+    }
+    std::cout << "Прямой ход: " << std::endl;
+    for (int i = 0; i < n; i++) {
+        int nenol_gor = 0;
+        int nenol_vert = 0;
+        bool null_vert = false;
+        bool null_gor = false;
+        bool dopusk = false;
+        if (A[i][i] == 0) {
+            for (int j = i; j < n; j++) {
+                if (A[i][j] == 0) {
+                    null_gor = true;
+                }
+                else {
+                    nenol_gor = j;
+                    null_gor = false;
+                    break;
+                }
+            }
+            for (int j = i; j < n; ++j) {
+                if (A[j][i] == 0) {
+                    null_vert = true;
+                }
+                else {
+                    nenol_vert = j;
+                    null_vert = false;
+                    break;
+                }
+            }
+            if ((null_gor) && (null_vert)) {
+                continue;
+            }
+        }
+        else {
+            dopusk = true;
+        }
+        if ((null_vert == false) && (dopusk == false)) {
+            for (int k = 0; k < n; k++) {
+                double temp_A = A[i][k];
+                A[i][k] = A[nenol_vert][k];
+                A[nenol_vert][k] = temp_A;
+            }
+            double temp_B = B[i];
+            B[i] = B[nenol_vert];
+            B[nenol_vert] = temp_B;
+            dopusk = true;
+        }
+        else if ((null_gor == false) && (dopusk == false)) {
+            for (int I = i + 1; I < n; ++I) { // Начинаем со следующей строки
+                double temp = A[I][nenol_gor] / A[i][nenol_gor];
+                for (int j = nenol_gor; j < n; ++j) {
+                    A[I][j] -= temp * A[i][j];
+                }
+                B[I] -= temp * B[i];
+            }
+        }
+        if (dopusk) {
+            for (int j = i + 1; j < n; j++) {
+                double temp = A[j][i] / A[i][i];
+                for (int k = 0; k < n; k++) {
+                    A[j][k] -= temp * A[i][k];
+                }
+                B[j] -= temp * B[i];
+            }
+        }
+        std::cout << "Операция " << i + 1 << ": " << std::endl;
+        for (int j = 0; j < n; j++) {
+            for (int k = 0; k < n; k++) {
+                std::cout << A[j][k] << ' ';
+            }
+            std::cout << ' ' << B[j] << std::endl;
+        }
+    }
+    int rankA = 0;
+    int rankAB = 0;
+    for (int i = 0; i < n; i++) {
+        bool IsNull_A = false;
+        for (int j = i; j < n; j++) {
+            if (A[i][j] == 0) {
+                IsNull_A = true;
+            }
+            else {
+                IsNull_A = false;
+                break;
+            }
+        }
+        if (IsNull_A == false) {
+            rankA++;
+            rankAB++;
+        }
+        if ((IsNull_A) && (B[i] != 0)) {
+            rankAB++;
+        }
+    }
+    std::cout << "rankA = " << rankA << std::endl;
+    std::cout << "rankAB = " << rankAB << std::endl;
+    int N = n;
+    for (int i = 0; i < n; i++) {
+        bool IsNull_vert = true;
+        for (int j = 0; j < n; j++) {
+            if (A[j][i] != 0) {
+                IsNull_vert = false;
+                break;
+            }
+        }
+        if (IsNull_vert) {
+            N--;
+        }
+    }
+    double* x = new double[n];
+    if (rankA == rankAB) {
+        if (rankA == N) {
+            std::cout << "Система имеет единственное решение." << std::endl;
+            std::cout << "Обратный ход: " << std::endl;
+            for (int i = n - 1; i >= 0; i--) {
+                if (A[i][i] != 0) {
+                    x[i] = B[i];
+                    for (int j = i + 1; j < n; j++) {
+                        x[i] -= A[i][j] * x[j];
+                    }
+                    x[i] /= A[i][i];
+                    if (x[i] == -0) {
+                        x[i] = 0;
+                    }
+                    continue;
+                }
+                int nenol;
+                bool null_vert = true;
+                for (int j = n - 1; j >= 0; j--) {
+                    if (A[j][i] != 0) {
+                        nenol = j;
+                        null_vert = false;
+                        break;
+                    }
+                }
+                if (null_vert) {
+                    x[i] = 0;
+                    continue;
+                }
+                else {
+                    x[i] = B[nenol];
+                    for (int j = i + 1; j < n; j++) {
+                        x[i] -= A[nenol][j] * x[j];
+                    }
+                    x[i] /= A[nenol][i];
+                    if (x[i] == -0) {
+                        x[i] = 0;
+                    }
+                }
+            }
+            for (int i = 0; i < n; i++) {
+                std::cout << "x" << i + 1 << " = " << x[i] << std::endl;
+            }
+            std::cout << "Проверка: " << std::endl;
+            bool Proverka = false;
+            for (int i = 0; i < n; i++) {
+                double epsilon = 1e-6;
+                double count = 0;
+                for (int j = 0; j < n; j++) {
+                    count += CopyA[i][j] * x[j];
+                    if (j == n - 1) {
+                        std::cout << CopyA[i][j] * x[j];
+                    }
+                    else {
+                        std::cout << CopyA[i][j] * x[j] << " + ";
+                    }
+                }
+                if (((count - CopyB[i]) < epsilon) || ((CopyB[i] - count) < epsilon)){
+                    std::cout << " = " << CopyB[i] << " == " << CopyB[i];
+                    std::cout << "  -> Верно." << std::endl;
+                    Proverka = true;
+                }else {
+                    std::cout << " = " << count << " == " << CopyB[i];
+                    std::cout << "  -> Неверно." << std::endl;
+                    Proverka = false; break;
+                }
+            }
+            if (Proverka) {
+                std::cout << "Решение прошло проверку. Решение верное.";
+            }
+            else {
+                std::cout << "Решение не прошло проверку. Решение неверное.";
+            }
+        }
+        else {
+            std::cout << "Система имеет бесконечное количесвто решений.";
+        }
+    }
+    else {
+        std::cout << "Система несовместна. Решений нет";
+    }
+    for (int i = 0; i < n; i++) {
+        delete[] A[i];
+        delete[] CopyA[i];
+    }
+    delete[] A;
+    delete[] CopyA;
+    delete[] B;
+    delete[] CopyB;
+    delete[] x;
+}
