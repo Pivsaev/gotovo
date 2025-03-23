@@ -33,7 +33,7 @@ int main() {
     std::cout << "Исходная матрица:" << std::endl;
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
-            std::cout <<  A[i][j] << ' ';
+            std::cout << A[i][j] << ' ';
         }
         std::cout << ' ' << B[i] << std::endl;
     }
@@ -132,22 +132,9 @@ int main() {
     }
     std::cout << "rankA = " << rankA << std::endl;
     std::cout << "rankAB = " << rankAB << std::endl;
-    int N = n;
-    for (int i = 0; i < n; i++) {
-        bool IsNull_vert = true;
-        for (int j = 0; j < n; j++) {
-            if (A[j][i] != 0) {
-                IsNull_vert = false;
-                break;
-            }
-        }
-        if (IsNull_vert) {
-            N--;
-        }
-    }
     double* x = new double[n];
     if (rankA == rankAB) {
-        if (rankA == N) {
+        if (rankA == n) {
             std::cout << "Система имеет единственное решение." << std::endl;
             std::cout << "Обратный ход: " << std::endl;
             for (int i = n - 1; i >= 0; i--) {
@@ -157,31 +144,7 @@ int main() {
                         x[i] -= A[i][j] * x[j];
                     }
                     x[i] /= A[i][i];
-                    if (x[i] == -0) {
-                        x[i] = 0;
-                    }
-                    continue;
-                }
-                int nenol;
-                bool null_vert = true;
-                for (int j = n - 1; j >= 0; j--) {
-                    if (A[j][i] != 0) {
-                        nenol = j;
-                        null_vert = false;
-                        break;
-                    }
-                }
-                if (null_vert) {
-                    x[i] = 0;
-                    continue;
-                }
-                else {
-                    x[i] = B[nenol];
-                    for (int j = i + 1; j < n; j++) {
-                        x[i] -= A[nenol][j] * x[j];
-                    }
-                    x[i] /= A[nenol][i];
-                    if (x[i] == -0) {
+                    if ((x[i] == -0) || (x[i] == +0)) {
                         x[i] = 0;
                     }
                 }
@@ -203,11 +166,12 @@ int main() {
                         std::cout << CopyA[i][j] * x[j] << " + ";
                     }
                 }
-                if (((count - CopyB[i]) < epsilon) || ((CopyB[i] - count) < epsilon)){
+                if (((count - CopyB[i]) < epsilon) || ((CopyB[i] - count) < epsilon)) {
                     std::cout << " = " << CopyB[i] << " == " << CopyB[i];
                     std::cout << "  -> Верно." << std::endl;
                     Proverka = true;
-                }else {
+                }
+                else {
                     std::cout << " = " << count << " == " << CopyB[i];
                     std::cout << "  -> Неверно." << std::endl;
                     Proverka = false; break;
